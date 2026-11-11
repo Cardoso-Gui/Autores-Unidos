@@ -12,7 +12,7 @@ const events=[
  {id:'leitura',day:'09',month:'JAN',type:'Clube de leitura',title:'Uma história, diferentes olhares',time:'18h · Encontro on-line',desc:'Um espaço de escuta e conversa para descobrir como uma mesma história pode encontrar leitores de maneiras diferentes.',items:['Leitura de trechos','Conversa sobre personagens e narrativa','Sugestões para o próximo encontro'],start:'20270109T210000Z',end:'20270109T223000Z'}
 ];
 const portraitPhotos=['photo-1494790108377-be9c29b29330', 'photo-1506794778202-cad84cf45f1d', 'photo-1534528741775-53994a69daeb', 'photo-1519085360753-af0119f7cbe7', 'photo-1531123897727-8f129e1688ce', 'photo-1500648767791-00dcc994a43e'];
-authors.forEach((author,index)=>{author.photo='https://images.unsplash.com/'+portraitPhotos[index]+'?auto=format&fit=crop&w=640&h=480&q=85';});
+authors.forEach((author,index)=>{author.photo='https://images.unsplash.com/'+portraitPhotos[index]+'?auto=format&fit=crop&crop=faces&w=640&h=640&q=85';});
 const page=document.body.dataset.page;
 const $=s=>document.querySelector(s);
 const mark='<svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#244f40"/><path d="M9 12c4-1 8 0 11 3 3-3 7-4 11-3v17c-4-1-8 0-11 3-3-3-7-4-11-3V12Zm11 3v17" stroke="#dceda7" stroke-width="1.5" stroke-linejoin="round"/></svg>';
