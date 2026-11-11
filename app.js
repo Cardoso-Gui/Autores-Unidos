@@ -33,3 +33,28 @@ document.addEventListener('click',e=>{const authorButton=e.target.closest('[data
 if(page==='authors'){const normalize=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();function filter(){const term=normalize($('#search').value.trim());const genre=$('#genre').value;const list=authors.filter(a=>(!genre||a.genre===genre)&&normalize(`${a.name} ${a.city} ${a.book}`).includes(term));$('[data-authors]').innerHTML=list.length?list.map(authorCard).join(''):'<p class="empty">Nenhum autor encontrado. Tente outro nome ou gênero.</p>';$('#result-count').textContent=`${list.length} ${list.length===1?'autor encontrado':'autores encontrados'} · Perfis de demonstração`}$('#search').addEventListener('input',filter);$('#genre').addEventListener('change',filter);filter()}
 if(page==='events'){$('#event-type').addEventListener('change',()=>{const list=events.filter(e=>!$('#event-type').value||e.type===$('#event-type').value);$('[data-events]').innerHTML=list.map(eventCard).join('');$('#event-count').textContent=`${list.length} encontros ilustrativos`})}
 if(page==='join'){$('#join-form').addEventListener('submit',e=>{e.preventDefault();const name=$('#name').value.trim();if(!name){$('#name').setCustomValidity('Digite seu nome para testar.');$('#name').reportValidity();return}$('#confirmation').hidden=false;$('#confirmation').innerHTML=`<strong>Prazer em conhecer você, ${esc(name)}!</strong><p>Você concluiu o teste de participação. Em uma versão oficial, esta etapa encaminharia seu interesse aos ADMs para análise.</p><p><strong>Nenhum dado foi enviado ou armazenado.</strong></p><a class="text-link" href="autores.html">Conhecer os perfis de exemplo →</a>`;$('#confirmation').focus();});$('#name').addEventListener('input',()=>$('#name').setCustomValidity(''))}
+
+// Homepage author carousel: readable, pausable, and keyboard friendly.
+if(page==='home'){
+ const track=document.querySelector('[data-authors="4"]');
+ const shell=document.createElement('div');shell.className='home-carousel';shell.setAttribute('role','region');shell.setAttribute('aria-roledescription','carrossel');shell.setAttribute('aria-label','Autores em destaque');
+ track.parentNode.insertBefore(shell,track);shell.appendChild(track);track.innerHTML=authors.map(authorCard).join('');
+ const viewport=document.createElement('div');viewport.className='carousel-viewport';track.before(viewport);viewport.appendChild(track);
+ track.id='featured-authors';
+ const controls=document.createElement('div');controls.className='carousel-controls';controls.innerHTML='<p class="carousel-count" aria-live="off"></p><div class="carousel-buttons"><button class="carousel-button" data-prev aria-label="Autores anteriores" aria-controls="featured-authors"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><button class="carousel-pause" data-pause aria-pressed="false">Pausar rotação</button><button class="carousel-button" data-next aria-label="Próximos autores" aria-controls="featured-authors"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button></div>';
+ shell.appendChild(controls);
+ const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');let start=0,paused=reduced.matches,hover=false,focused=false,visible=true,timer;
+ const count=()=>window.matchMedia('(max-width:400px)').matches?1:window.matchMedia('(max-width:1000px)').matches?2:4;
+ function paint(){const n=count();start=Math.min(start,authors.length-n);const card=track.firstElementChild;const step=card.getBoundingClientRect().width+parseFloat(getComputedStyle(track).gap);track.style.transform='translateX(-'+start*step+'px)';
+  [...track.children].forEach((card,i)=>{const shown=i>=start&&i<start+n;card.setAttribute('aria-hidden',String(!shown));card.inert=!shown;});
+  controls.querySelector('.carousel-count').textContent=String(start+1).padStart(2,'0')+' — '+String(start+n).padStart(2,'0')+' / '+String(authors.length).padStart(2,'0');
+  const pause=controls.querySelector('[data-pause]');pause.textContent=paused?'Retomar rotação':'Pausar rotação';pause.setAttribute('aria-pressed',String(paused));
+ }
+ function schedule(){clearInterval(timer);if(!paused&&!hover&&!focused&&visible&&!document.hidden){timer=setInterval(()=>move(1),5000)}}
+ function move(dir){const last=authors.length-count();start=dir>0?(start>=last?0:start+1):(start<=0?last:start-1);paint()}
+ controls.querySelector('[data-prev]').addEventListener('click',()=>{move(-1);schedule()});controls.querySelector('[data-next]').addEventListener('click',()=>{move(1);schedule()});controls.querySelector('[data-pause]').addEventListener('click',()=>{paused=!paused;paint();schedule()});
+ shell.addEventListener('mouseenter',()=>{hover=true;schedule()});shell.addEventListener('mouseleave',()=>{hover=false;schedule()});shell.addEventListener('focusin',()=>{focused=true;schedule()});shell.addEventListener('focusout',e=>{if(!shell.contains(e.relatedTarget)){focused=false;schedule()}});
+ document.addEventListener('visibilitychange',schedule);window.addEventListener('resize',()=>{paint();schedule()});reduced.addEventListener('change',e=>{paused=e.matches;paint();schedule()});
+ if('IntersectionObserver' in window)new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;schedule()},{threshold:.15}).observe(shell);
+ paint();schedule();
+}
